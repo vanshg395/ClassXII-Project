@@ -2,7 +2,7 @@
 
 This is a fully priveledged S/W to manage invoices for any firm.
 
-Features :
+Features:
 <ul>
   <li> Manages Stock-INVENTORY (By a manager only).
   <li> Gives rights to create bill to both cashier and manager.
