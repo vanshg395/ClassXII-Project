@@ -2,6 +2,16 @@
 
 from Tkinter import *
 import tkMessageBox , ttk , pickle , datetime , re
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="",
+  database="pyBill"
+)
+
+mycursor = mydb.cursor()
 
 def signout() :
     result = tkMessageBox.askquestion("Sign Out", "Are You Sure You Want To Sign Out?", icon='warning')
@@ -30,25 +40,36 @@ class iteminfo(object):
         return ((float(self.price) * float(qty)) * (1 - float(self.disc)/100.0) * (1 + 18/100.0))
 
 def change(code , x) :
-    selections = pickle.load(open("inventory.dat" , "rb"))
-    try :
-        if float(x) < 0 :
-            raise NegativeError
-        for i in selections :
-            if i.icode == code : 
-                k = float(i.qty) 
-                k += float(x) 
-                i.qty = str(k) 
-        pickle.dump(selections , open("inventory.dat" , "wb")) 
-        root1.destroy() 
-        addItemLayout() 
-    except NegativeError: 
-        tkMessageBox.showinfo("Quantity Error", "Please Enter A Valid Quantity.") 
-        root1.lift() 
-    except ValueError : 
-        newQty.delete(0 , END) 
-        tkMessageBox.showinfo("Value Error", "Please Enter An Integer.") 
-        root1.lift()            
+    x=int(x)
+    ##    selections = pickle.load(open("inventory.dat" , "rb"))
+##    try :
+##        if float(x) < 0 :
+##            raise NegativeError
+##        for i in selections :
+##            if i.icode == code : 
+##                k = float(i.qty) 
+##                k += float(x) 
+##                i.qty = str(k) 
+##        pickle.dump(selections , open("inventory.dat" , "wb"))
+    sql = "SELECT quantity FROM items WHERE productCode = %s"
+    val = (code,)
+    mycursor.execute(sql,val)
+    results = mycursor.fetchall()
+##    print results[0][0]
+    x += results[0][0]
+    sql = "UPDATE items SET quantity = %s WHERE productCode = %s"
+    val = (x, code)
+    mycursor.execute(sql,val)
+    mydb.commit()
+    root1.destroy() 
+    addItemLayout() 
+##    except NegativeError: 
+##        tkMessageBox.showinfo("Quantity Error", "Please Enter A Valid Quantity.") 
+##        root1.lift() 
+##    except ValueError : 
+##        newQty.delete(0 , END) 
+##        tkMessageBox.showinfo("Value Error", "Please Enter An Integer.") 
+##        root1.lift()            
             
 def editItem(event) :
     global newQty , root1
@@ -71,49 +92,67 @@ def editItem(event) :
         root1.mainloop()
    
 def addItem1(name , code , price , qty , disc , tax) :
-    l = pickle.load(open('inventory.dat','rb'))
-    nameList = [[],[]]
-    for i in l :
-        nameList[0].append(i.item)
-        nameList[1].append(i.icode)
+##    l = pickle.load(open('inventory.dat','rb'))
+##    nameList = [[],[]]
+##    for i in l :
+##        nameList[0].append(i.item)
+##        nameList[1].append(i.icode)
     if name.lstrip() == "" or code.lstrip() == "" or price.lstrip() == "" or qty.lstrip() == "" or disc.lstrip() == "" :
         tkMessageBox.showinfo("Input Error","All Fields Are Mandatory.")
-    elif (name not in nameList[0]) and (code not in nameList[1]):
-        try :
-            price , qty , disc = float(price) , float(qty) , float(disc)
-            table.insert("" , END , text = name , values = (code , price , qty , disc , tax))        
-            a = iteminfo()
-            l.append(a)
-            a=l[-1]
-            a.icode = code
-            a.item = name
-            a.price = str(price)
-            a.qty = str(qty)
-            a.disc = str(disc)           
-            pickle.dump(l , open('inventory.dat','wb'))            
-        except:
-            tkMessageBox.showinfo("Data Error","Price , Quantity And Discount Should Be Numerical.")
+    else:
+        print "Item Added"
+        sql = "INSERT INTO items VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (name, code, price, qty, disc, tax)
+        mycursor.execute(sql, val)
+        mydb.commit()
         productNameText.delete(0 , END)
         productCodeText.delete(0 , END)
         productPriceText.delete(0 , END)
         productQtyText.delete(0 , END)
-        productDiscText.delete(0 , END)    
-    else :
-        tkMessageBox.showinfo("Data Error","Item Name And Item Code Must Be Unique.")
+        productDiscText.delete(0 , END)
+        addItemLayout()
+        
+##    elif (name not in nameList[0]) and (code not in nameList[1]):
+##        try :
+##            price , qty , disc = float(price) , float(qty) , float(disc)
+##            table.insert("" , END , text = name , values = (code , price , qty , disc , tax))        
+##            a = iteminfo()
+##            l.append(a)
+##            a=l[-1]
+##            a.icode = code
+##            a.item = name
+##            a.price = str(price)
+##            a.qty = str(qty)
+##            a.disc = str(disc)           
+##            pickle.dump(l , open('inventory.dat','wb'))            
+##        except:
+##            tkMessageBox.showinfo("Data Error","Price , Quantity And Discount Should Be Numerical.")
+##            
+##    else :
+##        tkMessageBox.showinfo("Data Error","Item Name And Item Code Must Be Unique.")
         
 def deleteItem1():
-    try :        
-            selectedItem = table.selection()[0]
-            name =  table.item(table.focus())["text"]
-            table.delete(selectedItem)
-            l = pickle.load(open("inventory.dat" , "rb"))
-            for i in l :
-                if i.item == name :
-                    l.remove(i)
-            pickle.dump(l , open("inventory.dat" , "wb"))            
-    except :
-            tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
+##    try :        
+##            selectedItem = table.selection()[0]
+##            name =  table.item(table.focus())["text"]
+##            table.delete(selectedItem)
+##            l = pickle.load(open("inventory.dat" , "rb"))
+##            for i in l :
+##                if i.item == name :
+##                    l.remove(i)
+##            pickle.dump(l , open("inventory.dat" , "wb"))            
+##    except :
+##            tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
 
+    selectedItem = table.selection()[0]
+    code =  table.item(table.focus())["values"][0]
+##    print code
+    sql = "DELETE FROM items WHERE productCode = %s"
+    val = (code,)
+    mycursor.execute( sql , val )
+    mydb.commit()
+    addItemLayout()
+    
 def addItemLayout():
     global body , items , productNameText , table , productCodeText , productPriceText , productQtyText , productDiscText , productTaxText
 
@@ -194,9 +233,14 @@ def addItemLayout():
     table.place(x = 10 , y = 10 , height = 510 , width = 1330)
     table.bind("<Double-1>", editItem)
     
-    options = pickle.load(open("inventory.dat" , "rb"))
-    for j in options:
-        table.insert("" , END , text = j.item , values = (j.icode , j.price , j.qty , j.disc , productTaxText.get() ))
+##    options = pickle.load(open("inventory.dat" , "rb"))
+
+    mycursor = mydb.cursor()
+    sql = "SELECT * FROM items"
+    mycursor.execute(sql)
+    results = mycursor.fetchall()
+    for i in results:
+        table.insert("" , END , text = i[0] , values = (i[1] , i[2] , i[3] , i[4] , i[5]))
 
 def details(event):    
     try:
