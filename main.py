@@ -71,9 +71,11 @@ def signIn(username , password) :
         if (password == results[0][0]):
             if (results[0][1] == 1):
                 print("cashier is logged in")
+##                open("temp" , "w").write(username)
                 import managerAccount
             elif (results[0][1] == 2):
                 print("manager is loggeed in")
+##                open("temp" , "w").write(username)
                 import cashierAccount
         
 

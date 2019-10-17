@@ -26,18 +26,24 @@ class NegativeError(Exception) :
 class PositiveError(Exception) :
     pass
 
-class iteminfo(object):
-    def __init__(self):
-        self.icode = StringVar()
-        self.item = StringVar()
-        self.price = StringVar()
-        self.qty = StringVar()
-        self.disc = StringVar()
-    def calAmount(self , qty) :
-        k = float(self.qty)
-        k -= float(qty)
-        self.qty = str(k)
-        return ((float(self.price) * float(qty)) * (1 - float(self.disc)/100.0) * (1 + 18/100.0))
+##class iteminfo(object):
+##    def __init__(self):
+##        self.icode = StringVar()
+##        self.item = StringVar()
+##        self.price = StringVar()
+##        self.qty = StringVar()
+##        self.disc = StringVar()
+   
+
+def calAmount(qty, price, disc) :
+##    k = float(qty)
+####    k -= float(qty)
+##    qty = str(k)
+##    print ((float(price) * int(qty)) * (1 - float(disc)/100.0) * (1 + 18/100.0))
+##    print qty
+##    print price
+##    print disc
+    return ((float(price) * float(qty)) * (1 - float(disc)/100.0) * (1 + 18/100.0))
 
 def change(code , x) :
     x=int(x)
@@ -247,15 +253,25 @@ def details(event):
         if len(phoneNoText.get()) == 0 :
             raise IOError
         elif len(phoneNoText.get()) in (8,10):
-            int(phoneNoText.get())
-            file2 = open("details.dat" , "rb")
-            det = pickle.load(file2)
-            for i in det.keys():
-                if i == phoneNoText.get():
-                    clientNameText.delete(0 , END)
-                    clientNameText.insert(0 , det[i][0])
-                    emailText.delete(0 , END)
-                    emailText.insert(0 , det[i][1])
+
+            sql = "SELECT cname, email FROM customers WHERE contactNo = %s"
+            val = (phoneNoText.get(), )
+            mycursor.execute(sql,val)
+            results = mycursor.fetchall()
+            clientNameText.delete(0 , END)
+            clientNameText.insert(0 , results[0][0])
+            emailText.delete(0 , END)
+            emailText.insert(0 , results[0][1])
+            
+##            int(phoneNoText.get())
+##            file2 = open("details.dat" , "rb")
+##            det = pickle.load(file2)
+##            for i in det.keys():
+##                if i == phoneNoText.get():
+##                    clientNameText.delete(0 , END)
+##                    clientNameText.insert(0 , det[i][0])
+##                    emailText.delete(0 , END)
+##                    emailText.insert(0 , det[i][1])
         else :
             raise ValueError
     except ValueError:
@@ -296,17 +312,32 @@ def addItem2(name , code , price , qty , disc , tax) :
         tkMessageBox.showinfo("Data Error", "Please Select An Item And Click On Auto Fill Button.")
     else:        
         try:                    
-            for i in selections :
-                if variable.get() == i.item :
-                    if float(qty) > 0 :
-                        if float(qty) <= float(i.qty) :
-                            amount = i.calAmount(qty)
-                            amountList.append(amount)
-                        else:
-                            raise PositiveError
-                    else :
-                        raise NegativeError
-                    
+####            for i in selections :
+##                if variable.get() == i.item :
+##                    if float(qty) > 0 :
+##                        if float(qty) <= float(i.qty) :
+##                            amount = i.calAmount(qty)
+##                            amountList.append(amount)
+##                        else:
+##                            raise PositiveError
+##                    else :
+##                        raise NegativeError
+##
+
+            if int(qty)>0:
+                sql="SELECT quantity FROM items WHERE productCode = %s"
+                val = (code, )
+                mycursor.execute(sql,val)
+                results=mycursor.fetchall()
+                if int(qty)<=int(results[0][0]):
+                    amount=calAmount(qty,price,disc)
+                    amountList.append(amount)
+                    newQuantity = int(results[0][0]) - int(qty)
+                    sql = "UPDATE items SET quantity = %s WHERE productCode = %s"
+##                    newQuantity = newQuantity)
+                    val = (newQuantity,code)
+                    mycursor.execute(sql,val)
+                    mydb.commit()
             totalText.config(state = NORMAL)
             totalText.delete(0 , END)
             totalText.insert(0 , str(sum(amountList)))
@@ -349,61 +380,84 @@ def autoFill() :
     if  variable.get() == 'Choose Item':
         tkMessageBox.showinfo("Data Error", "Please Select An Item. ")
     else:
-        for i in selections :
-            if variable.get() == i.item :
-                productCodeText.config(state = NORMAL)
-                productCodeText.delete(0 , END)
-                productCodeText.insert(0 , i.icode)
-                productCodeText.config(state = DISABLED)
-                productPriceText.config(state = NORMAL)
-                productPriceText.delete(0 , END)
-                productPriceText.insert(0 , i.price)
-                productPriceText.config(state = DISABLED)
-                productDiscText.config(state = NORMAL)
-                productDiscText.delete(0 , END)
-                productDiscText.insert(0 , i.disc)
-                productDiscText.config(state = DISABLED)
-                break
+        sql = "SELECT * FROM items WHERE productName = %s"
+        variables = variable.get()
+##        print variables
+        val = (variables,)
+####        print val
+        mycursor.execute(sql,val)
+        results = mycursor.fetchall()
+##        print results
+##        for i in selections :
+##            if variable.get() == i.item :
+        productCodeText.config(state = NORMAL)
+        productCodeText.delete(0 , END)
+        productCodeText.insert(0 , results[0][1])
+        productCodeText.config(state = DISABLED)
+        productPriceText.config(state = NORMAL)
+        productPriceText.delete(0 , END)
+        productPriceText.insert(0 , results[0][2])
+        productPriceText.config(state = DISABLED)
+        productDiscText.config(state = NORMAL)
+        productDiscText.delete(0 , END)
+        productDiscText.insert(0 , results[0][4])
+        productDiscText.config(state = DISABLED)
+##                break
 
-def deleteItem2():
-    try :        
-        selectedItem = table.selection()[0]
-        name =  table.item(table.focus())["text"]
-        qty = table.item(table.focus())["values"][2]
-        amt = table.item(table.focus())["values"][5]            
-        del(itemDetails[int(selectedItem[1:]) - 1])
-        table.delete(selectedItem)
-    except :
-        tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
-
-    for i in selections :
-        if i.item == name :
-            k = float(i.qty)
-            k += float(qty)
-            i.qty = str(k)
-            amountList.remove(float(amt))
-            totalText.config(state = NORMAL)
-            totalText.delete(0 , END)
-            totalText.insert(0 , str(sum(amountList)))
-            totalText.config(state = DISABLED)
+##def deleteItem2():
+##    try :        
+##        selectedItem = table.selection()[0]
+##        name =  table.item(table.focus())["text"]
+##        qty = table.item(table.focus())["values"][2]
+##        amt = table.item(table.focus())["values"][5]            
+##        del(itemDetails[int(selectedItem[1:]) - 1])
+##        table.delete(selectedItem)
+##    except :
+##        tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
+##
+##    for i in selections :
+##        if i.item == name :
+##            k = float(i.qty)
+##            k += float(qty)
+##            i.qty = str(k)
+##            amountList.remove(float(amt))
+##            totalText.config(state = NORMAL)
+##            totalText.delete(0 , END)
+##            totalText.insert(0 , str(sum(amountList)))
+##            totalText.config(state = DISABLED)
 
 def generateBill() :
     if clientNameText.get().lstrip() == "" or invoiceText.get().lstrip() == "" or float(totalText.get()) == 0:
         tkMessageBox.showinfo("Data Error", "Data Provided Is Insufficient." , icon = "warning")
     else :            
-        pickle.dump(selections , open("inventory.dat" , "wb"))
-        
-        file1 = open(username + ".dat" , "ab")
-        clientDetails = [clientNameText.get() , phoneNoText.get() ,  emailText.get() , issueDateText.get() , offerText.get() ,totalText.get() , offerDiscText.get() , grandTotalText.get()]
-        d = {"invoiceNumber":invoiceText.get() , 'cDetails': clientDetails , 'iDetails' : itemDetails }
-        pickle.dump(d,file1)
-        tkMessageBox.showinfo("Congratulations!", "Invoice Has Been Generated." )
-        
-        file2 = open("details.dat" , "rb")
-        det = pickle.load(file2)
-        det[phoneNoText.get()] = (clientNameText.get() , emailText.get())
-        pickle.dump(det , open("details.dat" , "wb"))
-        
+##        pickle.dump(selections , open("inventory.dat" , "wb"))
+##        
+##        file1 = open(username + ".dat" , "ab")
+##        clientDetails = [clientNameText.get() , phoneNoText.get() ,  emailText.get() , issueDateText.get() , offerText.get() ,totalText.get() , offerDiscText.get() , grandTotalText.get()]
+##        d = {"invoiceNumber":invoiceText.get() , 'cDetails': clientDetails , 'iDetails' : itemDetails }
+##        pickle.dump(d,file1)
+##        tkMessageBox.showinfo("Congratulations!", "Invoice Has Been Generated." )
+##        
+##        file2 = open("details.dat" , "rb")
+##        det = pickle.load(file2)
+##        det[phoneNoText.get()] = (clientNameText.get() , emailText.get())
+##        pickle.dump(det , open("details.dat" , "wb"))
+
+        sql="SELECT cname FROM customers WHERE contactNo = %s"
+        val = (phoneNoText.get(), )
+        mycursor.execute(sql,val)
+        results = mycursor.fetchall()
+        if(results == []):
+            sql = "INSERT INTO customers VALUES (%s , %s , %s)"
+            val = (phoneNoText.get(),clientNameText.get(), emailText.get())
+            mycursor.execute(sql, val)
+            mydb.commit()
+        else:
+            pass
+        sql = "INSERT INTO bills VALUES (%s , %s, %s , %s)"
+        val = (invoiceText.get(), issueDateText.get(), grandTotalText.get(), phoneNoText.get())
+        mycursor.execute( sql, val)
+        mydb.commit()
         newInvoiceLayout()       
             
 def newInvoiceLayout() :
@@ -412,7 +466,7 @@ def newInvoiceLayout() :
     amountList = []
     itemDetails=[]
 
-    selections = pickle.load(open("inventory.dat" , "rb"))   
+##    selections = pickle.load(open("inventory.dat" , "rb"))   
 
     body.destroy()
     
@@ -450,11 +504,11 @@ def newInvoiceLayout() :
     invoiceText.insert(0 , datetime.datetime.now().strftime('%d%m%Y%H%M%S'))
     invoiceText.config(state = DISABLED)
     
-    issueDateLabel = Label(clientFrame , text = "Issue Date (DD/MM/YYYY)")
+    issueDateLabel = Label(clientFrame , text = "Issue Date (YYYY-MM-DD)")
     issueDateLabel.place(x = 950 , y = 30)
 
     issueDateText = Entry(clientFrame , width = 23 , disabledforeground = "black" , disabledbackground = "white")
-    issueDateText.insert(0 , datetime.datetime.now().strftime('%d/%m/%Y'))
+    issueDateText.insert(0 , datetime.datetime.now().strftime('%Y-%m-%d'))
     issueDateText.config(state = DISABLED )
     issueDateText.place(x   =  1150 , y = 30)
 
@@ -473,9 +527,16 @@ def newInvoiceLayout() :
     productNameLabel = Label(itemFrame , text  =  "Product Name ")
     productNameLabel.place(x  =  10 , y = 10)
 
-    options = pickle.load(open("inventory.dat" , "rb"))
-    l = [ a.item for a in options ]
+##    options = pickle.load(open("inventory.dat" , "rb"))
+##    l = [ a.item for a in options ]
 
+    sql = "SELECT productName FROM items"
+    mycursor.execute(sql)
+    results = mycursor.fetchall()
+    l=[]
+    for i in results:
+        l.append(i[0])
+##    print l
     variable = StringVar()
     variable.set("Choose Item")
     productNameList = apply(OptionMenu , (itemFrame , variable) + tuple(l))
@@ -516,9 +577,6 @@ def newInvoiceLayout() :
     
     add = Button(itemFrame , text = "Add Item" , command = lambda : addItem2(variable.get() , productCodeText.get() , productPriceText.get() , productQtyText.get() , productDiscText.get() , productTaxText.get()) , width = "10")
     add.place(x = 1120 , y = 25)
-
-    remove = Button(itemFrame , text = "Remove Item" , command = deleteItem2 , width = 10)
-    remove.place(x = 1240 , y = 25)
 
     autoFillButton = Button(itemFrame , text = "Auto Fill" , command = autoFill , width = 10)
     autoFillButton.place(x = 12 , y = 65)
@@ -601,11 +659,15 @@ def oldInvoiceLayout() :
     oldTable.bind("<Double-1>", viewBill)    
     
     try :
-        bills = open(username + ".dat","rb")
-        while True:
+        sql = "SELECT * FROM bills, customers WHERE bills.contactNo = customers.contactNo"
+        mycursor.execute(sql)
+        results = mycursor.fetchall()
+        print results
+##        bills = open(username + ".dat","rb")
+        for i in results:
             try:            
-                j = pickle.load(bills)
-                oldTable.insert("" , END , text = j["invoiceNumber"] , values = (j['cDetails'][0] ,  j['cDetails'][1]  ,  j['cDetails'][2]  , j['cDetails'][3] , j['cDetails'][-1]))            
+##                j = pickle.load(bills)
+                oldTable.insert("" , END , text = i[0] , values = (i[5] ,  i[3]  ,  i[6]  , i[1] , i[2]))            
             except EOFError:
                 break
     except IOError:
