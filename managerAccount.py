@@ -1,4 +1,3 @@
-# managerAccount
 
 from Tkinter import *
 import tkMessageBox , ttk , pickle , datetime , re
@@ -26,42 +25,21 @@ class NegativeError(Exception) :
 class PositiveError(Exception) :
     pass
 
-##class iteminfo(object):
-##    def __init__(self):
-##        self.icode = StringVar()
-##        self.item = StringVar()
-##        self.price = StringVar()
-##        self.qty = StringVar()
-##        self.disc = StringVar()
+
    
 
 def calAmount(qty, price, disc) :
-##    k = float(qty)
-####    k -= float(qty)
-##    qty = str(k)
-##    print ((float(price) * int(qty)) * (1 - float(disc)/100.0) * (1 + 18/100.0))
-##    print qty
-##    print price
-##    print disc
+
     return ((float(price) * float(qty)) * (1 - float(disc)/100.0) * (1 + 18/100.0))
 
 def change(code , x) :
     x=int(x)
-    ##    selections = pickle.load(open("inventory.dat" , "rb"))
-##    try :
-##        if float(x) < 0 :
-##            raise NegativeError
-##        for i in selections :
-##            if i.icode == code : 
-##                k = float(i.qty) 
-##                k += float(x) 
-##                i.qty = str(k) 
-##        pickle.dump(selections , open("inventory.dat" , "wb"))
+
     sql = "SELECT quantity FROM items WHERE productCode = %s"
     val = (code,)
     mycursor.execute(sql,val)
     results = mycursor.fetchall()
-##    print results[0][0]
+
     x += results[0][0]
     sql = "UPDATE items SET quantity = %s WHERE productCode = %s"
     val = (x, code)
@@ -69,13 +47,7 @@ def change(code , x) :
     mydb.commit()
     root1.destroy() 
     addItemLayout() 
-##    except NegativeError: 
-##        tkMessageBox.showinfo("Quantity Error", "Please Enter A Valid Quantity.") 
-##        root1.lift() 
-##    except ValueError : 
-##        newQty.delete(0 , END) 
-##        tkMessageBox.showinfo("Value Error", "Please Enter An Integer.") 
-##        root1.lift()            
+
             
 def editItem(event) :
     global newQty , root1
@@ -98,15 +70,10 @@ def editItem(event) :
         root1.mainloop()
    
 def addItem1(name , code , price , qty , disc , tax) :
-##    l = pickle.load(open('inventory.dat','rb'))
-##    nameList = [[],[]]
-##    for i in l :
-##        nameList[0].append(i.item)
-##        nameList[1].append(i.icode)
+
     if name.lstrip() == "" or code.lstrip() == "" or price.lstrip() == "" or qty.lstrip() == "" or disc.lstrip() == "" :
         tkMessageBox.showinfo("Input Error","All Fields Are Mandatory.")
     else:
-        print "Item Added"
         sql = "INSERT INTO items VALUES (%s, %s, %s, %s, %s, %s)"
         val = (name, code, price, qty, disc, tax)
         mycursor.execute(sql, val)
@@ -118,41 +85,14 @@ def addItem1(name , code , price , qty , disc , tax) :
         productDiscText.delete(0 , END)
         addItemLayout()
         
-##    elif (name not in nameList[0]) and (code not in nameList[1]):
-##        try :
-##            price , qty , disc = float(price) , float(qty) , float(disc)
-##            table.insert("" , END , text = name , values = (code , price , qty , disc , tax))        
-##            a = iteminfo()
-##            l.append(a)
-##            a=l[-1]
-##            a.icode = code
-##            a.item = name
-##            a.price = str(price)
-##            a.qty = str(qty)
-##            a.disc = str(disc)           
-##            pickle.dump(l , open('inventory.dat','wb'))            
-##        except:
-##            tkMessageBox.showinfo("Data Error","Price , Quantity And Discount Should Be Numerical.")
-##            
-##    else :
-##        tkMessageBox.showinfo("Data Error","Item Name And Item Code Must Be Unique.")
+
         
 def deleteItem1():
-##    try :        
-##            selectedItem = table.selection()[0]
-##            name =  table.item(table.focus())["text"]
-##            table.delete(selectedItem)
-##            l = pickle.load(open("inventory.dat" , "rb"))
-##            for i in l :
-##                if i.item == name :
-##                    l.remove(i)
-##            pickle.dump(l , open("inventory.dat" , "wb"))            
-##    except :
-##            tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
+
 
     selectedItem = table.selection()[0]
     code =  table.item(table.focus())["values"][0]
-##    print code
+
     sql = "DELETE FROM items WHERE productCode = %s"
     val = (code,)
     mycursor.execute( sql , val )
@@ -239,7 +179,6 @@ def addItemLayout():
     table.place(x = 10 , y = 10 , height = 510 , width = 1330)
     table.bind("<Double-1>", editItem)
     
-##    options = pickle.load(open("inventory.dat" , "rb"))
 
     mycursor = mydb.cursor()
     sql = "SELECT * FROM items"
@@ -263,15 +202,7 @@ def details(event):
             emailText.delete(0 , END)
             emailText.insert(0 , results[0][1])
             
-##            int(phoneNoText.get())
-##            file2 = open("details.dat" , "rb")
-##            det = pickle.load(file2)
-##            for i in det.keys():
-##                if i == phoneNoText.get():
-##                    clientNameText.delete(0 , END)
-##                    clientNameText.insert(0 , det[i][0])
-##                    emailText.delete(0 , END)
-##                    emailText.insert(0 , det[i][1])
+
         else :
             raise ValueError
     except ValueError:
@@ -312,17 +243,6 @@ def addItem2(name , code , price , qty , disc , tax) :
         tkMessageBox.showinfo("Data Error", "Please Select An Item And Click On Auto Fill Button.")
     else:        
         try:                    
-####            for i in selections :
-##                if variable.get() == i.item :
-##                    if float(qty) > 0 :
-##                        if float(qty) <= float(i.qty) :
-##                            amount = i.calAmount(qty)
-##                            amountList.append(amount)
-##                        else:
-##                            raise PositiveError
-##                    else :
-##                        raise NegativeError
-##
 
             if int(qty)>0:
                 sql="SELECT quantity FROM items WHERE productCode = %s"
@@ -334,14 +254,16 @@ def addItem2(name , code , price , qty , disc , tax) :
                     amountList.append(amount)
                     newQuantity = int(results[0][0]) - int(qty)
                     sql = "UPDATE items SET quantity = %s WHERE productCode = %s"
-##                    newQuantity = newQuantity)
                     val = (newQuantity,code)
                     mycursor.execute(sql,val)
                     mydb.commit()
-            totalText.config(state = NORMAL)
-            totalText.delete(0 , END)
-            totalText.insert(0 , str(sum(amountList)))
-            totalText.config(state = DISABLED)
+                    totalText.config(state = NORMAL)
+                    totalText.delete(0 , END)
+                    totalText.insert(0 , str(sum(amountList)))
+                    totalText.config(state = DISABLED)
+                else:
+                    tkMessageBox.showinfo("Data Error", "Quantity is out of stock. Please enter a lower quantity" , icon = "warning")
+            
             
             if flag == 1 :               
                 offerDiscText.config(state = NORMAL)
@@ -382,14 +304,10 @@ def autoFill() :
     else:
         sql = "SELECT * FROM items WHERE productName = %s"
         variables = variable.get()
-##        print variables
         val = (variables,)
-####        print val
         mycursor.execute(sql,val)
         results = mycursor.fetchall()
-##        print results
-##        for i in selections :
-##            if variable.get() == i.item :
+
         productCodeText.config(state = NORMAL)
         productCodeText.delete(0 , END)
         productCodeText.insert(0 , results[0][1])
@@ -402,47 +320,11 @@ def autoFill() :
         productDiscText.delete(0 , END)
         productDiscText.insert(0 , results[0][4])
         productDiscText.config(state = DISABLED)
-##                break
-
-##def deleteItem2():
-##    try :        
-##        selectedItem = table.selection()[0]
-##        name =  table.item(table.focus())["text"]
-##        qty = table.item(table.focus())["values"][2]
-##        amt = table.item(table.focus())["values"][5]            
-##        del(itemDetails[int(selectedItem[1:]) - 1])
-##        table.delete(selectedItem)
-##    except :
-##        tkMessageBox.showinfo("Remove Item", "Please Select An Item.")
-##
-##    for i in selections :
-##        if i.item == name :
-##            k = float(i.qty)
-##            k += float(qty)
-##            i.qty = str(k)
-##            amountList.remove(float(amt))
-##            totalText.config(state = NORMAL)
-##            totalText.delete(0 , END)
-##            totalText.insert(0 , str(sum(amountList)))
-##            totalText.config(state = DISABLED)
 
 def generateBill() :
     if clientNameText.get().lstrip() == "" or invoiceText.get().lstrip() == "" or float(totalText.get()) == 0:
         tkMessageBox.showinfo("Data Error", "Data Provided Is Insufficient." , icon = "warning")
     else :            
-##        pickle.dump(selections , open("inventory.dat" , "wb"))
-##        
-##        file1 = open(username + ".dat" , "ab")
-##        clientDetails = [clientNameText.get() , phoneNoText.get() ,  emailText.get() , issueDateText.get() , offerText.get() ,totalText.get() , offerDiscText.get() , grandTotalText.get()]
-##        d = {"invoiceNumber":invoiceText.get() , 'cDetails': clientDetails , 'iDetails' : itemDetails }
-##        pickle.dump(d,file1)
-##        tkMessageBox.showinfo("Congratulations!", "Invoice Has Been Generated." )
-##        
-##        file2 = open("details.dat" , "rb")
-##        det = pickle.load(file2)
-##        det[phoneNoText.get()] = (clientNameText.get() , emailText.get())
-##        pickle.dump(det , open("details.dat" , "wb"))
-
         sql="SELECT cname FROM customers WHERE contactNo = %s"
         val = (phoneNoText.get(), )
         mycursor.execute(sql,val)
@@ -454,10 +336,11 @@ def generateBill() :
             mydb.commit()
         else:
             pass
-        sql = "INSERT INTO bills VALUES (%s , %s, %s , %s)"
-        val = (invoiceText.get(), issueDateText.get(), grandTotalText.get(), phoneNoText.get())
+        sql = "INSERT INTO bills VALUES (%s , %s, %s , %s, %s)"
+        val = (invoiceText.get(), issueDateText.get(), grandTotalText.get(), phoneNoText.get(), username    )
         mycursor.execute( sql, val)
         mydb.commit()
+        tkMessageBox.showinfo("Success", "Congratulations, The invoice has been generated." , icon = "warning")
         newInvoiceLayout()       
             
 def newInvoiceLayout() :
@@ -466,7 +349,6 @@ def newInvoiceLayout() :
     amountList = []
     itemDetails=[]
 
-##    selections = pickle.load(open("inventory.dat" , "rb"))   
 
     body.destroy()
     
@@ -527,8 +409,7 @@ def newInvoiceLayout() :
     productNameLabel = Label(itemFrame , text  =  "Product Name ")
     productNameLabel.place(x  =  10 , y = 10)
 
-##    options = pickle.load(open("inventory.dat" , "rb"))
-##    l = [ a.item for a in options ]
+
 
     sql = "SELECT productName FROM items"
     mycursor.execute(sql)
@@ -536,7 +417,6 @@ def newInvoiceLayout() :
     l=[]
     for i in results:
         l.append(i[0])
-##    print l
     variable = StringVar()
     variable.set("Choose Item")
     productNameList = apply(OptionMenu , (itemFrame , variable) + tuple(l))
@@ -656,157 +536,20 @@ def oldInvoiceLayout() :
     oldTable.column("#4" , minwidth = 150 , width = 150 , stretch = False , anchor = CENTER)
     oldTable.column("#5" , minwidth = 150 , width = 150 , stretch = False , anchor = CENTER)    
     oldTable.pack(side = BOTTOM , expand = YES)
-    oldTable.bind("<Double-1>", viewBill)    
     
     try :
         sql = "SELECT * FROM bills, customers WHERE bills.contactNo = customers.contactNo"
         mycursor.execute(sql)
         results = mycursor.fetchall()
-        print results
-##        bills = open(username + ".dat","rb")
         for i in results:
             try:            
-##                j = pickle.load(bills)
-                oldTable.insert("" , END , text = i[0] , values = (i[5] ,  i[3]  ,  i[6]  , i[1] , i[2]))            
+                oldTable.insert("" , END , text = i[0] , values = (i[6] ,  i[3]  ,  i[7]  , i[1] , i[2]))            
             except EOFError:
                 break
     except IOError:
         pass
 
-def viewBill(event):
-    def closeBill():
-        root1.destroy()
-        
-    try:
-        bills = open(username + ".dat","rb")
-        item = oldTable.selection()[0]
-    except:
-        pass
-    else:
-        try:
-            i = 0
-            while i != int (item[1:]):
-                j = pickle.load(bills)
-                i += 1            
-        except EOFError:
-            pass     
-        root1 = Tk()
-        try :
-            root1.state("zoomed")
-        except:
-            root1.attributes('-fullscreen', True)
-        root1.title("Old Invoice  : " + j["invoiceNumber"])    
-    
-        body = Frame(root1 , bd = 5)
-        body.pack(side = TOP , fill = BOTH , expand = True)
 
-        clientFrame = LabelFrame(body , text = "Client Details" , font = ("Arial" , 15))
-        clientFrame.pack(fill = BOTH)
-
-        phoneNoLabel = Label(clientFrame , text = "Contact Number ")
-        phoneNoLabel.place(x = 10 , y = 30)
-
-        phoneNoText = Entry(clientFrame , width = 30 , disabledforeground = "black" , disabledbackground = "white" )
-        phoneNoText.place(x = 120 , y = 30)
-        phoneNoText.insert(0 , j["cDetails"][1])
-        phoneNoText.config(state = DISABLED )
-         
-        clientNameLabel = Label(clientFrame , text = "Client Name ")
-        clientNameLabel.place(x = 10 , y = 80)
-
-        clientNameText = Entry(clientFrame , width = 30 , disabledforeground = "black" , disabledbackground = "white")
-        clientNameText.place(x = 120 , y = 80)
-        clientNameText.insert(0 , j["cDetails"][0])
-        clientNameText.config(state = DISABLED)
-        
-        emailLabel = Label(clientFrame , text = "Email Address ")
-        emailLabel.place(x = 470 , y = 80)
-
-        emailText = Entry(clientFrame , width = 30 , disabledforeground = "black" , disabledbackground = "white")
-        emailText.place(x = 610 , y = 80)
-        emailText.insert(0 , j["cDetails"][2])
-        emailText.config(state = DISABLED )
-        
-        invoiceLabel = Label(clientFrame , text = "Invoice Number ")
-        invoiceLabel.place(x = 470 , y = 30)
-
-        invoiceText = Entry(clientFrame , width = 30 , disabledforeground = "black" , disabledbackground = "white")
-        invoiceText.place(x = 610 , y = 30)
-        invoiceText.insert(0 , j["invoiceNumber"])
-        invoiceText.config(state = DISABLED)
-        
-        issueDateLabel = Label(clientFrame , text = "Issue Date (DD/MM/YYYY)")
-        issueDateLabel.place(x = 950 , y = 30)
-
-        issueDateText = Entry(clientFrame , width = 23 , disabledforeground = "black" , disabledbackground = "white")
-        issueDateText.insert(0 , j["cDetails"][3])
-        issueDateText.config(state = DISABLED )
-        issueDateText.place(x   =  1150 , y = 30)
-
-        offerLabel = Label(clientFrame , text = "Monthly Offer")
-        offerLabel.place(x = 950 , y = 80)
-
-        offerText = Entry(clientFrame , width = 23  ,disabledforeground = "black" , disabledbackground = "white")
-        offerText.place(x = 1150 , y= 80)
-        offerText.insert(0 , j["cDetails"][4])
-        offerText.config(state = DISABLED )
-
-        lineBreak = Label(clientFrame , text = "\n\n\n\n\n\n\n")
-        lineBreak.pack(side = RIGHT)
-
-        itemFrame = LabelFrame(body , text = "Item Details" , font = ("Arial" , 15))
-        itemFrame.pack(fill  =  BOTH , expand = YES)
-
-        table = ttk.Treeview(itemFrame , selectmode = "extended" , columns = ("code" , "price" , "qty" , "disc" , "tax" , "amnt") , height = 24)
-        
-        table.heading("#0" , text = "Product Name")
-        table.heading("#1" , text = "Product Code")
-        table.heading("#2" , text = "Price/Unit (INR)")
-        table.heading("#3" , text = "Quantity")
-        table.heading("#4" , text = "Discount (%)")
-        table.heading("#5" , text = "Tax (%)")
-        table.heading("#6" , text = "Amount")
-        
-        table.column("#0" , minwidth = 500 , width = 500 , stretch = False , anchor = CENTER)
-        table.column("#1" , minwidth = 180 , width = 180 , stretch = False , anchor = CENTER)
-        table.column("#2" , minwidth = 137 , width = 137 , stretch = False , anchor = CENTER)
-        table.column("#3" , minwidth = 130 , width = 130 , stretch = False , anchor = CENTER)
-        table.column("#4" , minwidth = 130 , width = 130 , stretch = False , anchor = CENTER)
-        table.column("#5" , minwidth = 100 , width = 100 , stretch = False , anchor = CENTER)
-        table.column("#6" , minwidth = 150 , width = 150 , stretch = False , anchor = CENTER)
-        table.place(x = 10 , y = 10 , height = 400 , width = 1330)
-        
-        for i in range(len(j["iDetails"])):
-                table.insert("" , END , text = j["iDetails"][i][0] , values = (j["iDetails"][i][1] , j["iDetails"][i][2] ,j["iDetails"][i][3] , j["iDetails"][i][4] , j["iDetails"][i][5] , j["iDetails"][i][6]))
-
-        totalLabel = Label(itemFrame , text = "Total")
-        totalLabel.place(relx = 1 , rely = 1 , x = -200 , y = -90) 
-
-        totalText = Entry(itemFrame)
-        totalText.insert(0 , j["cDetails"][5])
-        totalText.config(state = DISABLED , disabledforeground = "black" , disabledbackground = "white")
-        totalText.place(relx = 1 , rely = 1 , x = -30 , y = -70 , anchor = SE)
-
-        offerDiscLabel = Label(itemFrame , text = "Offer Discount")
-        offerDiscLabel.place(relx = 1 , rely = 1 , x = -166 , y = -50 , anchor = SE)
-        
-        offerDiscText = Entry(itemFrame )
-        offerDiscText.place(relx = 1 , rely = 1 , x = -30 , y = -50 , anchor = SE)
-        offerDiscText.insert(0 ,j["cDetails"][6])
-        offerDiscText.config(state = DISABLED , disabledforeground = "black" , disabledbackground = "white")
-        
-        grandTotalLabel = Label(itemFrame , text = "Grand Total")
-        grandTotalLabel.place(relx = 1 , rely = 1 , x = -166 , y = -30 , anchor = SE)
-        
-        grandTotalText = Entry(itemFrame )
-        grandTotalText.place(relx = 1 , rely = 1 , x = -30 , y = -30 , anchor = SE)
-        grandTotalText.insert(0 , j["cDetails"][-1])
-        grandTotalText.config(state = DISABLED , disabledforeground = "black" , disabledbackground = "white")
-
-        closeBill = Button(itemFrame , text = "Close" , command =  closeBill, width = 20)
-        closeBill.pack(side = BOTTOM , pady = 10)
-        
-        root1.mainloop()
 
 def aboutLayout():
     global body
@@ -837,13 +580,13 @@ body.pack(side = TOP , fill = BOTH , expand = True)
 welcome = Label(body , text = "Welcome to Manager Account" , font = ("Arial" , 40))
 welcome.place(x = 350 , y = 300)
 
-# username = open("temp" , "r").read()
+username = open("temp" , "r").read()
 
 logout = Button(root , text = "Logout" , command = signout , width = 10)
 logout.place(rely = 0, relx = 1, x = 0, y = 0, anchor=NE)
 
-# userLabel = Label(root , text = username , font = ("Arial" , 14) , bg = "white" , foreground = "blue")
-# userLabel.place(rely = 0, relx = 1, x = -120, y = 3, anchor=NE)
+userLabel = Label(root , text = username , font = ("Arial" , 14) , bg = "white" , foreground = "blue")
+userLabel.place(rely = 0, relx = 1, x = -120, y = 3, anchor=NE)
 
 items = Button(head , text = "Inventory" , width = 30 , command = addItemLayout)
 items.place(x = 0)
